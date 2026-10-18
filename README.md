@@ -36,7 +36,7 @@ island account
 island workloads list
 
 # Submit a custom job
-island jobs submit --workload llm-chat --input '{"prompt": "Hello!"}' --stream
+island jobs submit --workload gguf-qwen3.5-9b --input '{"messages": [{"role": "user", "content": "Hello!"}]}' --stream
 
 # View Islands on the network
 island hosts list
@@ -57,7 +57,7 @@ You can also use environment variables:
 
 ```bash
 export ARCHIPELAG_API_KEY="ak_your_key_here"
-export ARCHIPELAG_API_URL="https://api.archipelag.io"    # default
+export ARCHIPELAG_API_URL="https://app.archipelag.io"    # default
 export ARCHIPELAG_NATS_URL="nats://sail.archipelag.io:4222"  # default
 ```
 
@@ -71,7 +71,7 @@ Precedence: CLI flag > environment variable > config file.
 | `island auth status` | Show authentication status |
 | `island auth logout` | Remove saved credentials |
 | `island account` | Show account info and credits |
-| `island chat <prompt>` | Chat with an AI model (streaming) |
+| `island chat [prompt]` | Chat with an AI model (streaming); no prompt starts an interactive chat |
 | `island jobs list` | List your compute jobs |
 | `island jobs submit` | Submit a new job |
 | `island jobs get <id>` | Get job details |
@@ -111,7 +111,14 @@ island chat "Hello" --max-tokens 100 --temperature 0.5
 island chat "Hello" --no-stream
 
 # Use a specific Cargo
-island chat "Hello" --workload llm-chat
+island chat "Hello" --model gguf-qwen3.5-9b   # pick a chat Cargo (default: auto)
+
+# Interactive conversation (the model sees the whole history)
+island chat
+island chat --system "You are a patient tutor"
+
+# Pipe a prompt in
+cat notes.md | island chat --system "Summarize this in three bullets"
 ```
 
 ## Sail (NATS)

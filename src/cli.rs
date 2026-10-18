@@ -11,7 +11,7 @@ pub struct Cli {
         long,
         global = true,
         env = "ARCHIPELAG_API_URL",
-        default_value = "https://api.archipelag.io"
+        default_value = "https://app.archipelag.io"
     )]
     pub api_url: String,
 
@@ -53,10 +53,11 @@ pub enum Command {
     /// Show account info and credit balance
     Account,
 
-    /// Chat with an AI model (streaming)
+    /// Chat with an AI model (streaming). Without a prompt, starts an
+    /// interactive conversation; piped input is read as the prompt.
     Chat {
         /// The prompt to send
-        prompt: String,
+        prompt: Option<String>,
 
         /// System prompt
         #[arg(short, long)]
@@ -70,9 +71,9 @@ pub enum Command {
         #[arg(short, long)]
         temperature: Option<f32>,
 
-        /// Workload slug to use
-        #[arg(short, long, default_value = "llm-chat")]
-        workload: String,
+        /// Model: a chat Cargo slug, or "auto"
+        #[arg(short = 'w', long, alias = "workload", default_value = "auto")]
+        model: String,
 
         /// Disable streaming (wait for full response)
         #[arg(long)]
