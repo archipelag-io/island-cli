@@ -1,57 +1,53 @@
-# archipelagio-cli
+# island-cli
 
 Command-line interface for the [Archipelag.io](https://archipelag.io) distributed compute network.
 
 **[Full documentation](https://docs.archipelag.io/sdks/cli/)** · **[Quickstart](https://docs.archipelag.io/getting-started/quickstart/cli/)** · **[API Specs](https://app.archipelag.io/api/v1/docs)**
 
-The binary is called `archipelagio` and can also be invoked as `aio` for short.
+The binary is called `island`.
 
 ## Install
 
 ### From source
 
 ```bash
-cargo install --git https://github.com/archipelag-io/archipelagio-cli
+cargo install --git https://github.com/archipelag-io/island-cli
 ```
 
 ### From crates.io
 
 ```bash
-cargo install archipelag
+cargo install island-cli
 ```
-
-Both `archipelagio` and `aio` (symlink) are included in release tarballs.
 
 ## Quick Start
 
 ```bash
 # Authenticate with your API key
-aio auth login
+island auth login
 
 # Chat with an AI model (streaming)
-aio chat "Explain quantum computing in one paragraph"
+island chat "Explain quantum computing in one paragraph"
 
 # Check your account balance
-aio account
+island account
 
 # List available Cargos
-aio workloads list
+island workloads list
 
 # Submit a custom job
-aio jobs submit --workload llm-chat --input '{"prompt": "Hello!"}' --stream
+island jobs submit --workload llm-chat --input '{"prompt": "Hello!"}' --stream
 
 # View Islands on the network
-aio hosts list
+island hosts list
 
 # Check market rates
-aio market rates
+island market rates
 ```
-
-All examples use `aio` for brevity. `archipelagio` works identically.
 
 ## Configuration
 
-Config is stored at `~/.config/archipelag/config.toml`:
+Config is stored at `~/.island/config.toml`:
 
 ```toml
 api_key = "ak_your_key_here"
@@ -71,51 +67,51 @@ Precedence: CLI flag > environment variable > config file.
 
 | Command | Description |
 |---------|-------------|
-| `aio auth login` | Save API key |
-| `aio auth status` | Show authentication status |
-| `aio auth logout` | Remove saved credentials |
-| `aio account` | Show account info and credits |
-| `aio chat <prompt>` | Chat with an AI model (streaming) |
-| `aio jobs list` | List your compute jobs |
-| `aio jobs submit` | Submit a new job |
-| `aio jobs get <id>` | Get job details |
-| `aio jobs stream <id>` | Stream job output |
-| `aio jobs cancel <id>` | Cancel a running job |
-| `aio workloads list` | List available Cargos |
-| `aio workloads get <slug>` | Get Cargo details |
-| `aio hosts list` | List online Islands |
-| `aio hosts get <id>` | Get Island details |
-| `aio api-keys list` | List API keys |
-| `aio api-keys create <name>` | Create a new API key |
-| `aio api-keys delete <id>` | Delete an API key |
-| `aio market rates` | Show current market rates |
-| `aio market history <slug>` | Price history for a Cargo |
-| `aio sail subscribe <subject>` | Subscribe to NATS messages |
-| `aio completion <shell>` | Generate shell completions |
+| `island auth login` | Save API key |
+| `island auth status` | Show authentication status |
+| `island auth logout` | Remove saved credentials |
+| `island account` | Show account info and credits |
+| `island chat <prompt>` | Chat with an AI model (streaming) |
+| `island jobs list` | List your compute jobs |
+| `island jobs submit` | Submit a new job |
+| `island jobs get <id>` | Get job details |
+| `island jobs stream <id>` | Stream job output |
+| `island jobs cancel <id>` | Cancel a running job |
+| `island workloads list` | List available Cargos |
+| `island workloads get <slug>` | Get Cargo details |
+| `island hosts list` | List online Islands |
+| `island hosts get <id>` | Get Island details |
+| `island api-keys list` | List API keys |
+| `island api-keys create <name>` | Create a new API key |
+| `island api-keys delete <id>` | Delete an API key |
+| `island market rates` | Show current market rates |
+| `island market history <slug>` | Price history for a Cargo |
+| `island sail subscribe <subject>` | Subscribe to NATS messages |
+| `island completion <shell>` | Generate shell completions |
 
 ## Output Formats
 
 All commands support `--format json` for machine-readable output:
 
 ```bash
-aio jobs list --format json
-aio account --format json | jq '.credits'
+island jobs list --format json
+island account --format json | jq '.credits'
 ```
 
 ## Chat Options
 
 ```bash
 # With system prompt
-aio chat "Write a haiku" --system "You are a poet"
+island chat "Write a haiku" --system "You are a poet"
 
 # Control generation
-aio chat "Hello" --max-tokens 100 --temperature 0.5
+island chat "Hello" --max-tokens 100 --temperature 0.5
 
 # Non-streaming (wait for complete response)
-aio chat "Hello" --no-stream
+island chat "Hello" --no-stream
 
 # Use a specific Cargo
-aio chat "Hello" --workload llm-chat
+island chat "Hello" --workload llm-chat
 ```
 
 ## Sail (NATS)
@@ -124,26 +120,26 @@ Subscribe to live messages on the Archipelag.io message fabric:
 
 ```bash
 # Watch all heartbeats
-aio sail subscribe "host.*.heartbeat"
+island sail subscribe "host.*.heartbeat"
 
 # Watch job status updates for a specific host
-aio sail subscribe "host.abc123.status"
+island sail subscribe "host.abc123.status"
 
 # Limit to 10 messages
-aio sail subscribe "host.*.heartbeat" --max 10
+island sail subscribe "host.*.heartbeat" --max 10
 ```
 
 ## Shell Completions
 
 ```bash
 # Bash
-aio completion bash >> ~/.bashrc
+island completion bash >> ~/.bashrc
 
 # Zsh
-aio completion zsh >> ~/.zshrc
+island completion zsh >> ~/.zshrc
 
 # Fish
-aio completion fish > ~/.config/fish/completions/archipelagio.fish
+island completion fish > ~/.config/fish/completions/island.fish
 ```
 
 ## License

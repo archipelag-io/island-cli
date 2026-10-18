@@ -67,4 +67,4 @@ These endpoints exist in the API but don't have CLI commands yet. Good candidate
 
 ## NATS
 
-The `aio sail subscribe` command provides raw access to any NATS subject. This covers all real-time messaging without needing individual commands for each subject pattern.
+The `island sail subscribe` command provides raw access to any NATS subject. This covers all real-time messaging without needing individual commands for each subject pattern.

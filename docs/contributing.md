@@ -8,8 +8,8 @@
 ## Setup
 
 ```bash
-git clone https://github.com/archipelag-io/archipelagio-cli.git
-cd archipelagio-cli
+git clone https://github.com/archipelag-io/island-cli.git
+cd island-cli
 cargo build
 ```
 
@@ -21,7 +21,7 @@ cargo build
 
 # Run
 cargo run -- --help
-cargo run -- account --api-key ak_xxx  # runs as archipelagio
+cargo run -- account --api-key ak_xxx  # runs as island
 
 # Check everything CI checks
 cargo fmt --check
@@ -132,6 +132,6 @@ The release workflow (`.github/workflows/release.yml`) will:
 
 - Build binaries for 6 targets (linux amd64/arm64/musl, macOS amd64/arm64, Windows)
 - Create a GitHub Release with all binaries and SHA256 checksums
-- Build and push a multi-arch OCI container to `ghcr.io/archipelag-io/archipelagio-cli`
+- Build and push a multi-arch OCI container to `ghcr.io/archipelag-io/island-cli`
 
-Tags are automatically versioned: `v0.1.0` → `ghcr.io/archipelag-io/archipelagio-cli:0.1.0`, `:0.1`, `:0`, `:latest`.
+Tags are automatically versioned: `v0.1.0` → `ghcr.io/archipelag-io/island-cli:0.1.0`, `:0.1`, `:0`, `:latest`.

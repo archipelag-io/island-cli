@@ -4,7 +4,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 
 ARG TARGETARCH
 
-COPY build/linux-${TARGETARCH}/archipelagio /usr/local/bin/archipelagio
-RUN ln -s archipelagio /usr/local/bin/aio
+COPY build/linux-${TARGETARCH}/island /usr/local/bin/island
 
-ENTRYPOINT ["archipelagio"]
+ENTRYPOINT ["island"]

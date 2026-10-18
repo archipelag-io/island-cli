@@ -77,30 +77,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
 
 [[package]]
-name = "archipelag"
-version = "0.2.0"
-dependencies = [
- "anyhow",
- "async-nats",
- "chrono",
- "clap",
- "clap_complete",
- "colored",
- "dirs",
- "eventsource-stream",
- "futures",
- "indicatif",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "tokio",
- "tokio-stream",
- "toml",
- "uuid",
-]
-
-[[package]]
 name = "async-nats"
 version = "0.38.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -968,6 +944,30 @@ name = "is_terminal_polyfill"
 version = "1.70.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695"
+
+[[package]]
+name = "island-cli"
+version = "0.2.0"
+dependencies = [
+ "anyhow",
+ "async-nats",
+ "chrono",
+ "clap",
+ "clap_complete",
+ "colored",
+ "dirs",
+ "eventsource-stream",
+ "futures",
+ "indicatif",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "tokio-stream",
+ "toml",
+ "uuid",
+]
 
 [[package]]
 name = "itoa"

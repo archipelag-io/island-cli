@@ -1,16 +1,16 @@
 [package]
-name = "archipelag"
+name = "island-cli"
 version = "0.2.0"
 edition = "2021"
 description = "CLI for the Archipelag.io distributed compute network"
 license = "MIT"
-repository = "https://github.com/archipelag-io/archipelagio-cli"
+repository = "https://github.com/archipelag-io/island-cli"
 homepage = "https://archipelag.io"
 keywords = ["cli", "compute", "distributed", "gpu", "inference"]
 categories = ["command-line-utilities"]
 
 [[bin]]
-name = "archipelagio"
+name = "island"
 path = "src/main.rs"
 
 [dependencies]

@@ -9,7 +9,7 @@ The CLI is a single Rust binary that communicates with two backend services:
 
 ```
 ┌──────────────┐
-│ archipelagio  │  (binary, alias: aio)
+│    island     │  (binary)
 │    CLI        │
 ├──────┬───────┤
 │ HTTP │ NATS  │
@@ -47,7 +47,7 @@ The `OutputFormat` enum (`Text` | `Json`) controls how all output is rendered.
 `ApiClient` wraps `reqwest::Client` with:
 
 - Default `Authorization: Bearer` header from the API key
-- `User-Agent: archipelagio-cli/{version}` header
+- `User-Agent: island-cli/{version}` header
 - `check_error()` that maps HTTP status codes to human-readable `anyhow` errors (401 → auth, 402 → credits, 429 → rate limit, etc.)
 - SSE streaming via `eventsource-stream` for `stream_job()` and `chat_stream()`, returned as `Pin<Box<dyn Stream>>` for ergonomic consumption
 
@@ -87,7 +87,7 @@ Status values are color-coded: green (completed/online), red (failed/offline), c
 
 ## Data Flow
 
-### Authenticated command (e.g., `aio jobs list`)
+### Authenticated command (e.g., `island jobs list`)
 
 ```
 main() → Cli::parse()
@@ -99,7 +99,7 @@ main() → Cli::parse()
        → output::print_jobs()       // text table or JSON
 ```
 
-### Streaming command (e.g., `aio chat "hello"`)
+### Streaming command (e.g., `island chat "hello"`)
 
 ```
 main() → commands::run()
@@ -112,7 +112,7 @@ main() → commands::run()
        → final newline + token count to stderr
 ```
 
-### NATS command (e.g., `aio sail subscribe "host.*.heartbeat"`)
+### NATS command (e.g., `island sail subscribe "host.*.heartbeat"`)
 
 ```
 main() → commands::run()

@@ -15,7 +15,7 @@ pub async fn run(cli: Cli) -> Result<()> {
         Command::Auth { command } => run_auth(command).await,
         Command::Completion { shell } => {
             let mut cmd = <Cli as clap::CommandFactory>::command();
-            clap_complete::generate(shell, &mut cmd, "archipelagio", &mut io::stdout());
+            clap_complete::generate(shell, &mut cmd, "island", &mut io::stdout());
             Ok(())
         }
         _ => {

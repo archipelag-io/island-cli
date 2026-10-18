@@ -3,7 +3,7 @@ use clap_complete::Shell;
 
 /// CLI for the Archipelag.io distributed compute network
 #[derive(Parser)]
-#[command(name = "archipelagio", version, about)]
+#[command(name = "island", version, about)]
 #[command(propagate_version = true)]
 pub struct Cli {
     /// API base URL
