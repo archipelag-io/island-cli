@@ -31,19 +31,16 @@ pub async fn run(cli: Cli) -> Result<()> {
                     system,
                     max_tokens,
                     temperature,
-                    workload,
+                    model,
                     no_stream,
                 } => {
-                    run_chat(
-                        &client,
-                        &prompt,
-                        system,
+                    let options = ChatOptions {
+                        model,
                         max_tokens,
                         temperature,
-                        &workload,
-                        no_stream,
-                    )
-                    .await
+                        stream: !no_stream,
+                    };
+                    run_chat(&client, prompt, system, &options).await
                 }
                 Command::Jobs { command } => run_jobs(&client, command, format).await,
                 Command::Workloads { command } => run_workloads(&client, command, format).await,
@@ -150,14 +147,18 @@ async fn run_account(client: &ApiClient, format: OutputFormat) -> Result<()> {
 
 // --- Chat ---
 
-async fn run_chat(
-    client: &ApiClient,
-    prompt: &str,
-    system: Option<String>,
+struct ChatOptions {
+    model: String,
     max_tokens: Option<u32>,
     temperature: Option<f32>,
-    _workload: &str,
-    no_stream: bool,
+    stream: bool,
+}
+
+async fn run_chat(
+    client: &ApiClient,
+    prompt: Option<String>,
+    system: Option<String>,
+    options: &ChatOptions,
 ) -> Result<()> {
     let mut messages = Vec::new();
     if let Some(sys) = system {
@@ -166,67 +167,154 @@ async fn run_chat(
             content: sys,
         });
     }
-    messages.push(ChatMessage {
-        role: "user".to_string(),
-        content: prompt.to_string(),
-    });
 
-    let request = ChatRequest {
-        model: "default".to_string(),
-        messages,
-        stream: !no_stream,
-        max_tokens,
-        temperature,
+    use std::io::IsTerminal;
+    let prompt = match prompt {
+        Some(p) => Some(p),
+        // `echo "question" | island chat`
+        None if !io::stdin().is_terminal() => {
+            let mut input = String::new();
+            io::Read::read_to_string(&mut io::stdin(), &mut input)?;
+            Some(input.trim().to_string())
+        }
+        None => None,
     };
 
-    if no_stream {
-        let response = client.chat(&request).await?;
-        if let Some(choice) = response.choices.first() {
-            if let Some(ref msg) = choice.message {
-                if let Some(ref content) = msg.content {
-                    println!("{content}");
-                }
+    match prompt {
+        Some(prompt) => {
+            messages.push(ChatMessage {
+                role: "user".to_string(),
+                content: prompt,
+            });
+            send_chat(client, &messages, options).await.map(|_| ())
+        }
+        None => interactive_chat(client, messages, options).await,
+    }
+}
+
+/// A conversation in the terminal; the model sees the whole history
+async fn interactive_chat(
+    client: &ApiClient,
+    mut messages: Vec<ChatMessage>,
+    options: &ChatOptions,
+) -> Result<()> {
+    let system: Vec<ChatMessage> = messages.clone();
+    eprintln!(
+        "{}",
+        format!(
+            "Chatting with {} — /clear starts over, /exit or Ctrl-D quits",
+            options.model
+        )
+        .dimmed()
+    );
+
+    let stdin = io::stdin();
+    loop {
+        eprint!("{} ", "you>".cyan().bold());
+        io::stderr().flush()?;
+
+        let mut line = String::new();
+        if stdin.read_line(&mut line)? == 0 {
+            eprintln!();
+            return Ok(());
+        }
+        let line = line.trim();
+        match line {
+            "" => continue,
+            "/exit" | "/quit" => return Ok(()),
+            "/clear" => {
+                messages = system.clone();
+                eprintln!("{}", "Conversation cleared.".dimmed());
+                continue;
             }
+            _ => {}
+        }
+
+        messages.push(ChatMessage {
+            role: "user".to_string(),
+            content: line.to_string(),
+        });
+        match send_chat(client, &messages, options).await {
+            Ok(answer) => messages.push(ChatMessage {
+                role: "assistant".to_string(),
+                content: answer,
+            }),
+            Err(e) => {
+                // Drop the unanswered question so the conversation stays valid
+                messages.pop();
+                eprintln!("{} {e}", "✗".red());
+            }
+        }
+    }
+}
+
+/// Send the conversation, print the answer, and return it
+async fn send_chat(
+    client: &ApiClient,
+    messages: &[ChatMessage],
+    options: &ChatOptions,
+) -> Result<String> {
+    let request = ChatRequest {
+        model: options.model.clone(),
+        messages: messages.to_vec(),
+        stream: options.stream,
+        max_tokens: options.max_tokens,
+        temperature: options.temperature,
+        stream_options: options
+            .stream
+            .then(|| serde_json::json!({ "include_usage": true })),
+    };
+
+    let mut answer = String::new();
+
+    if !options.stream {
+        let response = client.chat(&request).await?;
+        if let Some(content) = response
+            .choices
+            .first()
+            .and_then(|c| c.message.as_ref())
+            .and_then(|m| m.content.clone())
+        {
+            println!("{content}");
+            answer = content;
         }
         if let Some(ref usage) = response.usage {
             eprintln!(
-                "\n{}",
+                "{}",
                 format!("[{} tokens]", usage.total_tokens.unwrap_or(0)).dimmed()
             );
         }
-    } else {
-        let mut stream = client.chat_stream(&request).await?;
-        let mut total_tokens = 0u64;
+        return Ok(answer);
+    }
 
-        while let Some(result) = stream.next().await {
-            match result {
-                Ok(chunk) => {
-                    for choice in &chunk.choices {
-                        if let Some(ref delta) = choice.delta {
-                            if let Some(ref content) = delta.content {
-                                print!("{content}");
-                                io::stdout().flush()?;
-                            }
-                        }
-                    }
-                    if let Some(ref usage) = chunk.usage {
-                        total_tokens = usage.total_tokens.unwrap_or(total_tokens);
-                    }
-                }
-                Err(e) => {
-                    eprintln!("\n{} Stream error: {e}", "✗".red());
-                    break;
-                }
+    let mut stream = client.chat_stream(&request).await?;
+    let mut total_tokens = 0u64;
+
+    while let Some(result) = stream.next().await {
+        let chunk = match result {
+            Ok(chunk) => chunk,
+            Err(e) => {
+                println!();
+                return Err(e);
+            }
+        };
+        for choice in &chunk.choices {
+            if let Some(content) = choice.delta.as_ref().and_then(|d| d.content.as_ref()) {
+                print!("{content}");
+                io::stdout().flush()?;
+                answer.push_str(content);
             }
         }
-
-        println!(); // Final newline
-        if total_tokens > 0 {
-            eprintln!("{}", format!("[{total_tokens} tokens]").dimmed());
+        if let Some(ref usage) = chunk.usage {
+            total_tokens = usage.total_tokens.unwrap_or(total_tokens);
         }
     }
 
-    Ok(())
+    println!();
+    if total_tokens > 0 {
+        eprintln!("{}", format!("[{total_tokens} tokens]").dimmed());
+    }
+    Ok(answer)
 }
 
 // --- Jobs ---

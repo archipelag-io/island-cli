@@ -190,6 +190,18 @@ impl ApiClient {
                     if event.data.is_empty() || event.data == "[DONE]" {
                         return None;
                     }
+                    // The server reports a failed Job as an SSE error event
+                    if let Ok(serde_json::Value::Object(obj)) =
+                        serde_json::from_str::<serde_json::Value>(&event.data)
+                    {
+                        if let Some(message) = obj
+                            .get("error")
+                            .and_then(|e| e.get("message"))
+                            .and_then(|m| m.as_str())
+                        {
+                            return Some(Err(anyhow::anyhow!("{message}")));
+                        }
+                    }
                     match serde_json::from_str::<ChatCompletionResponse>(&event.data) {
                         Ok(chunk) => Some(Ok(chunk)),
                         Err(e) => Some(Err(anyhow::anyhow!("Failed to parse chunk: {e}"))),
